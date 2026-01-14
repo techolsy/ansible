@@ -4,3 +4,6 @@
 [submodule "collections/ansible_collections/techolsy/integration"]
 	path = collections/ansible_collections/techolsy/integration
 	url = git@github.com:techolsy/integration.git
+[submodule "mitogen"]
+	path = mitogen
+	url = https://github.com/mitogen-hq/mitogen.git
