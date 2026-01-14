@@ -1,3 +1,6 @@
 [submodule "inventory"]
 	path = inventory
 	url = git@github.com:techolsy/ansible-inventory.git
+[submodule "collections/ansible_collections/techolsy/integration"]
+	path = collections/ansible_collections/techolsy/integration
+	url = git@github.com:techolsy/integration.git
