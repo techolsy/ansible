@@ -16,3 +16,6 @@
 [submodule "collections/ansible_collections/ansible/utils"]
 	path = collections/ansible_collections/ansible/utils
 	url = https://github.com/ansible-collections/ansible.utils.git
+[submodule "collections/ansible_collections/techolsy/infra"]
+	path = collections/ansible_collections/techolsy/infra
+	url = git@github.com:techolsy/ansible-infra.git
