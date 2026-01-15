@@ -1,0 +1,88 @@
+---
+- name: Create new px vm
+  hosts: localhost
+  gather_facts: false
+  strategy: linear
+  vars:
+
+    px_api_defaults: &px_api_defaults
+      api_user: "{{ px_api_user }}"
+      api_token_id: "{{ px_api_token_id }}"
+      api_token_secret: "{{ px_api_token_secret }}"
+      api_host: "{{ px_api_host }}"
+
+
+  module_defaults:
+
+    community.proxmox.proxmox_kvm:
+      <<: *px_api_defaults
+      node: "{{ px_node }}"
+      timeout: 600
+
+    community.proxmox.proxmox_disk:
+      <<: *px_api_defaults
+
+  tasks:
+
+    - name: Check assertions
+      ansible.builtin.assert:
+        that:
+          - ip_addr is defined
+          - host is defined
+
+    - name: Set ipv6 fact
+      ansible.builtin.set_fact:
+        ip6_addr: "{{ ip6_prefix + ip_addr.split('.')[-1] }}"
+
+    - name: Import role to add host to DNS
+      ansible.builtin.import_role:
+        name: techolsy.infra.dns
+      vars:
+        dns_action: add
+
+    - name: Clone template vm # noqa args[module]
+      community.proxmox.proxmox_kvm:
+        vmid: 9002
+        clone: template
+        name: "{{ host }}"
+        storage: "{{ px_default_storage }}"
+      register: _vm_info
+
+    - name: Configure cloud-init # noqa args[module]
+      community.proxmox.proxmox_kvm:
+        vmid: "{{ _vm_info.vmid }}"
+        ciuser: root
+        searchdomains: "{{ local_domain }}"
+        nameservers: "{{ nameserver }}"
+        sshkeys: "{{ lookup('ansible.builtin.file', '~/.ssh/id_ed25519.pub') }}"
+        net:
+          net0: "virtio,bridge=vmbr0"
+        ipconfig:
+          ipconfig0: "gw={{ ip4_gw }},ip={{ ip_addr }}/{{ ip4_cidr }}"
+        update: true
+
+    - name: Add disk for swap # noqa args[module]
+      community.proxmox.proxmox_disk:
+        vmid: "{{ _vm_info.vmid }}"
+        disk: scsi1
+        backup: true
+        iothread: true
+        discard: true
+        storage: "{{ px_default_storage }}"
+        size: 2
+        state: present
+
+    - name: Start vm
+      community.proxmox.proxmox_kvm: # noqa args[module]
+        vmid: "{{ _vm_info.vmid }}"
+        state: started
+
+    - name: Wait for vm to be started
+      ansible.builtin.wait_for:
+        host: "{{ ip_addr }}"
+        port: 22
+        timeout: 300
+
+    - name: Import config role
+      ansible.builtin.import_role:
+        name: techolsy.infra.config
