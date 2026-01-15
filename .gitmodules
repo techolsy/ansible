@@ -19,3 +19,6 @@
 [submodule "collections/ansible_collections/techolsy/infra"]
 	path = collections/ansible_collections/techolsy/infra
 	url = git@github.com:techolsy/ansible-infra.git
+[submodule "collections/ansible_collections/community/proxmox"]
+	path = collections/ansible_collections/community/proxmox
+	url = https://github.com/ansible-collections/community.proxmox.git
