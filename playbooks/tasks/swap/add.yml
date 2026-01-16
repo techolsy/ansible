@@ -1,0 +1,35 @@
+---
+- name: Find correct disk for swap
+  ansible.builtin.shell: |
+    set -o pipefail &&
+    ls -l /dev/disk/by-id | grep 'scsi1' | cut -d '/' -f 3
+  register: _swap_disk
+  changed_when: false
+
+- name: Create vg1
+  community.general.lvg:
+    vg: 1
+    pvs: /dev/{{ _swap_disk.stdout }}
+    pesize: 16
+
+- name: Create 1-swap
+  community.general.lvol:
+    vg: 1
+    lv: swap
+    size: 100%FREE
+    force: true
+
+- name: Format 1-swap
+  community.general.filesystem:
+    fstype: swap
+    dev: /dev/mapper/1-swap
+
+- name: Mount 1-swap
+  ansible.builtin.lineinfile:
+    dest: /etc/fstab
+    line: /dev/mapper/1-swap none swap sw 0 0
+
+- name: Swapon
+  ansible.builtin.command:
+    cmd: swapon -a
+  changed_when: false
