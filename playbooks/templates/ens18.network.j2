@@ -1,0 +1,9 @@
+[Match]
+Name=ens18
+
+[Network]
+Address={{ ansible_inventory_ip }}/{{ ip4_cidr }}
+Address={{ ansible_inventory_ip6 }}/64
+Gateway={{ ip4_gw }}
+Gateway={{ ip6_gw }}
+DNS={{ nameserver1 }} {{ nameserver2 }}
