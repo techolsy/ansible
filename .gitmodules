@@ -22,3 +22,6 @@
 [submodule "collections/ansible_collections/community/proxmox"]
 	path = collections/ansible_collections/community/proxmox
 	url = https://github.com/ansible-collections/community.proxmox.git
+[submodule "collections/ansible_collections/community/general"]
+	path = collections/ansible_collections/community/general
+	url = https://github.com/ansible-collections/community.general.git
