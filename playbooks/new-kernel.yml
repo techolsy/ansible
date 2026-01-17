@@ -1,0 +1,32 @@
+---
+- name: Reboot if new kernel
+  hosts: vm,vps
+  gather_facts: true
+  handlers:
+
+    - name: Zabbix set-maintenance
+      ansible.builtin.include_tasks:
+        file: tasks/zabbix/set-maintenance.yml
+
+    - name: Reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+
+  tasks:
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Upgrade apt packages
+      ansible.builtin.apt:
+        upgrade: true
+
+    - name: Run kernel check script
+      ansible.builtin.command:
+        cmd: /etc/zabbix/scripts/check_kernel
+      register: _check_kernel
+      changed_when: not _check_kernel == "Running latest installed kernel"
+      notify:
+        - Zabbix set-maintenance
+        - Reboot
