@@ -12,6 +12,10 @@
       ansible.builtin.reboot:
         reboot_timeout: 300
 
+    - name: Autoremove
+      ansible.builtin.apt:
+        autoremove: true
+
   tasks:
 
     - name: Update apt cache
@@ -30,3 +34,4 @@
       notify:
         - Zabbix set-maintenance
         - Reboot
+        - Autoremove
