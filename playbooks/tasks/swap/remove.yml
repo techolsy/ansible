@@ -1,0 +1,19 @@
+---
+- name: Swapoff
+  ansible.builtin.command:
+    cmd: swapoff -a
+  changed_when: false
+
+- name: Umount 0-swap
+  ansible.posix.mount:
+    src: /dev/mapper/0-swap
+    path: none
+    fstype: swap
+    state: absent
+
+- name: remove vg0 swap
+  community.general.lvol:
+    vg: 0
+    lv: swap
+    state: absent
+    force: true

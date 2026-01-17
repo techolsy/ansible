@@ -1,0 +1,8 @@
+---
+# .ansible-lint
+
+profile: null
+
+skip_list:
+  - name[missing]
+  - args[module]
