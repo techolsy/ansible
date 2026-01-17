@@ -1,0 +1,17 @@
+---
+- name: Zabbix set-maintenance
+  vars:
+    ansible_zabbix_auth_key: "{{ zabbix_auth_key }}"
+    ansible_network_os: community.zabbix.zabbix
+    ansible_connection: httpapi
+    ansible_httpapi_port: 443
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false
+    ansible_zabbix_url_path: "/"
+  become: false
+  delegate_to: "{{ zabbix_host }}"
+  community.zabbix.zabbix_maintenance:
+    name: New host {{ ansible_fqdn }}
+    host_name: "{{ ansible_fqdn }}"
+    state: present
+    minutes: 15
