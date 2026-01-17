@@ -1,0 +1,16 @@
+---
+- name: Download zabbix agent
+  ansible.builtin.apt:
+    deb: https://repo.zabbix.com/zabbix/7.0/debian/pool/main/z/zabbix-release/zabbix-release_latest_7.0+debian13_all.deb
+  register: _zabbix_agent
+  retries: 5
+  delay: 5
+  until: _zabbix_agent is success
+
+- name: Install zabbix agent
+  ansible.builtin.apt:
+    update_cache: true
+    pkg:
+      - zabbix-agent2
+      - zabbix-agent2-plugin-*
+    state: present
