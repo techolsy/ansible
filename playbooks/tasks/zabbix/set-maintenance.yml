@@ -11,7 +11,7 @@
   become: false
   delegate_to: "{{ zabbix_host }}"
   community.zabbix.zabbix_maintenance:
-    name: New host {{ ansible_fqdn }}
+    name: host maintenance {{ ansible_fqdn }}
     host_name: "{{ ansible_fqdn }}"
     state: present
     minutes: 15
