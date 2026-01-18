@@ -28,3 +28,6 @@
 [submodule "collections/ansible_collections/community/zabbix"]
 	path = collections/ansible_collections/community/zabbix
 	url = https://github.com/ansible-collections/community.zabbix.git
+[submodule "collections/ansible_collections/community/docker"]
+	path = collections/ansible_collections/community/docker
+	url = https://github.com/ansible-collections/community.docker.git
