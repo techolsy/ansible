@@ -42,7 +42,7 @@
 
     - name: Clone template vm # noqa args[module]
       community.proxmox.proxmox_kvm:
-        vmid: 9002
+        vmid: 9003
         clone: template
         name: "{{ host }}"
         storage: "{{ px_default_storage }}"
