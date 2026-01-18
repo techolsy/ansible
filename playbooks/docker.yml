@@ -1,0 +1,37 @@
+---
+- name: Docker compose setup
+  hosts: docker
+  gather_facts: true
+  tasks:
+    - name: Make sure directory exists
+      ansible.builtin.file:
+        dest: "{{ compose_file | dirname }}"
+        state: directory
+        mode: "0644"
+
+    - name: Copy compose template
+      ansible.builtin.template:
+        src: templates/{{ ansible_hostname }}/docker-compose.yml.j2
+        dest: "{{ compose_file }}"
+        mode: "0644"
+
+    - name: Pull and run with docker compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ compose_file | dirname }}"
+        pull: always
+
+    - name: Check if container is healty
+      community.docker.docker_container_info:
+        name: "{{ item }}"
+      until: "_container_info.container.State.Health.Status == 'healthy'"
+      register: _container_info
+      retries: 15
+      delay: 10
+      loop: "{{ docker_containers_status }}"
+      when: docker_containers_status is defined
+
+    - name: Prune old unused images
+      community.docker.docker_prune:
+        images: true
+        images_filters:
+          dangling: false
