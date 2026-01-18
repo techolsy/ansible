@@ -2,6 +2,14 @@
 - name: Docker compose setup
   hosts: docker
   gather_facts: true
+  handlers:
+
+    - name: Prune old unused images
+      community.docker.docker_prune:
+        images: true
+        images_filters:
+          dangling: false
+
   tasks:
     - name: Get apt package facts
       ansible.builtin.package_facts:
@@ -27,6 +35,7 @@
       community.docker.docker_compose_v2:
         project_src: "{{ compose_file | dirname }}"
         pull: always
+      notify: Prune old unused images
 
     - name: Check if container is healty
       community.docker.docker_container_info:
@@ -37,9 +46,3 @@
       delay: 10
       loop: "{{ docker_containers_status }}"
       when: docker_containers_status is defined
-
-    - name: Prune old unused images
-      community.docker.docker_prune:
-        images: true
-        images_filters:
-          dangling: false
