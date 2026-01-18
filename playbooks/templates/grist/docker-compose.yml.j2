@@ -1,0 +1,12 @@
+services:
+  grist:
+    image: gristlabs/grist:{{ grist_version }}
+    container_name: grist
+    restart: always
+    environment:
+      - GRIST_SESSION_SECRET:{{ grist_secret }}
+      - GRIST_DEFAULT_EMAIL:{{ grist_default_email }}
+    volumes:
+      - ./persist:/persist
+    ports:
+      - 8484:8484
