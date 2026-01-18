@@ -1,0 +1,24 @@
+---
+- name: Caddy setup
+  hosts: caddy
+  gather_facts: true
+  handlers:
+
+    - name: Restart caddy
+      ansible.builtin.systemd_service:
+        name: caddy.service
+        state: restarted
+
+  tasks:
+
+    - name: Make sure caddy is installed
+      ansible.builtin.apt:
+        pkg: caddy
+        update_cache: true
+
+    - name: Copy caddy template
+      ansible.builtin.template:
+        src: templates/caddy/Caddyfile.j2
+        dest: /etc/caddy/Caddyfile
+        mode: "0644"
+      notify: Restart caddy
