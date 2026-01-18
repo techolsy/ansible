@@ -7,6 +7,8 @@
     - name: Zabbix set-maintenance
       ansible.builtin.include_tasks:
         file: tasks/zabbix/set-maintenance.yml
+      vars:
+        maintenance_message: "New kernel: {{ ansible_fqdn }}"
 
     - name: Reboot
       ansible.builtin.reboot:
