@@ -1,0 +1,20 @@
+{% if caddy_acme_header is defined %}
+{{ caddy_acme_header }}
+{% endif %}
+
+{% if caddy_reverse_proxies is defined %}
+{% for proxy in caddy_reverse_proxies %}
+{{ proxy.hostname }} {
+  reverse_proxy {{ proxy.host }}:{{ proxy.port }}
+}
+{% endfor %}
+{% endif %}
+
+{% if caddy_file_servers is defined %}
+{% for file_server in caddy_file_servers %}
+{{ file_server.hostname }} {
+  root * {{ file_server.root }}
+  file_server
+}
+{% endfor %}
+{% endif %}
