@@ -7,13 +7,13 @@
     - name: Copy motd-datestamp
       ansible.builtin.copy:
         dest: /etc/motd
-        mode: "0644"
+        mode: 0644
         content: |
-          Server setup date: {{ now(utc=true,fmt='%Y-%m-%d') }}
+          Server setup date: {{ now(utc=true, fmt='%Y-%m-%d') }}
 
     - name: Zabbix set-maintenance
       ansible.builtin.include_tasks:
-        file: ./tasks/zabbix/set-maintenance.yml
+        file: tasks/zabbix/set-maintenance.yml
       vars:
         maintenance_message: "New host: {{ ansible_fqdn }}"
 
@@ -75,7 +75,7 @@
     - name: Copy resolv.conf
       ansible.builtin.copy:
         dest: /etc/resolv.conf
-        mode: "0644"
+        mode: 0644
         content: |
           domain {{ local_domain }}
           search {{ local_domain }}
@@ -86,7 +86,7 @@
       ansible.builtin.template:
         src: templates/systemd/network/interface.network.j2
         dest: /etc/systemd/network/{{ ansible_default_ipv4.interface }}.network
-        mode: "0644"
+        mode: 0644
 
     - name: Make sure networkd is enabled and running
       ansible.builtin.systemd_service:
@@ -134,7 +134,7 @@
     - name: Copy zabbix config file
       ansible.builtin.copy:
         dest: /etc/zabbix/zabbix_agent2.conf
-        mode: "0644"
+        mode: 0644
         content: |
           PidFile=/var/run/zabbix/zabbix_agent2.pid
           LogFile=/var/log/zabbix/zabbix_agent2.log
@@ -181,18 +181,18 @@
         content: |
           SUBSYSTEM=="cpu", ACTION=="add", TEST=="online", ATTR{online}=="0", ATTR{online}="1"
           SUBSYSTEM=="memory", ACTION=="add", TEST=="state", ATTR{state}=="offline", ATTR{state}="online"
-        mode: "0644"
+        mode: 0644
       notify: Reboot
 
     - name: Copy root certificate
       ansible.builtin.copy:
         dest: /usr/local/share/ca-certificates/{{ item.name }}
-        mode: "0644"
+        mode: 0644
         content: "{{ item.content }}"
       loop: "{{ root_certificates }}"
       register: copy_root_certs
 
-    - name: Update ca trust
+    - name: Update ca trust # noqa no-handler
       ansible.builtin.command:
         cmd: update-ca-certificates
       changed_when: false
