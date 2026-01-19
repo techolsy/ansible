@@ -1,9 +1,13 @@
 [Match]
-Name=ens18
+Name={{ ansible_default_ipv4.interface }}
 
 [Network]
 Address={{ ansible_inventory_ip }}/{{ ip4_cidr }}
+{% if ansible_inventory_ip6 is defined %}
 Address={{ ansible_inventory_ip6 }}/64
+{% endif %}
 Gateway={{ ip4_gw }}
+{% if ansible_inventory_ip6 is defined %}
 Gateway={{ ip6_gw }}
+{% endif %}
 DNS={{ nameserver1 }} {{ nameserver2 }}
