@@ -23,13 +23,13 @@
       ansible.builtin.file:
         dest: "{{ compose_file | dirname }}"
         state: directory
-        mode: "0644"
+        mode: 0644
 
     - name: Copy compose template
       ansible.builtin.template:
         src: templates/{{ ansible_hostname }}/docker-compose.yml.j2
         dest: "{{ compose_file }}"
-        mode: "0644"
+        mode: 0644
 
     - name: Pull and run with docker compose
       community.docker.docker_compose_v2:

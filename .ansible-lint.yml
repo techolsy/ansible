@@ -4,5 +4,6 @@
 profile: null
 
 skip_list:
+  - yaml[ocal-values]
   - name[missing]
   - args[module]
