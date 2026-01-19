@@ -40,7 +40,7 @@
       vars:
         dns_action: add
 
-    - name: Clone template vm # noqa args[module]
+    - name: Clone template vm
       community.proxmox.proxmox_kvm:
         vmid: 9003
         clone: template
@@ -48,7 +48,7 @@
         storage: "{{ px_default_storage }}"
       register: _vm_info
 
-    - name: Configure cloud-init # noqa args[module]
+    - name: Configure cloud-init
       community.proxmox.proxmox_kvm:
         vmid: "{{ _vm_info.vmid }}"
         ciuser: root
@@ -61,7 +61,7 @@
           ipconfig0: "gw={{ ip4_gw }},ip={{ ip_addr }}/{{ ip4_cidr }}"
         update: true
 
-    - name: Add disk for swap # noqa args[module]
+    - name: Add disk for swap
       community.proxmox.proxmox_disk:
         vmid: "{{ _vm_info.vmid }}"
         disk: scsi1
@@ -73,7 +73,7 @@
         state: present
 
     - name: Start vm
-      community.proxmox.proxmox_kvm: # noqa args[module]
+      community.proxmox.proxmox_kvm:
         vmid: "{{ _vm_info.vmid }}"
         state: started
 
