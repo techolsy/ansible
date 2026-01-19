@@ -82,10 +82,10 @@
           nameserver {{ nameserver1 }}
           nameserver {{ nameserver2 }}
 
-    - name: Make sure systemd ens18 interface exists
+    - name: Make sure systemd interface exists
       ansible.builtin.template:
-        src: templates/ens18.network.j2
-        dest: /etc/systemd/network/ens18.network
+        src: templates/systemd/network/interface.network.j2
+        dest: /etc/systemd/network/{{ ansible_default_ipv4.interface }}.network
         mode: "0644"
 
     - name: Make sure networkd is enabled and running
