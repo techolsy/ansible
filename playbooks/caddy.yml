@@ -20,5 +20,5 @@
       ansible.builtin.template:
         src: templates/caddy/Caddyfile.j2
         dest: /etc/caddy/Caddyfile
-        mode: "0644"
+        mode: 0644
       notify: Restart caddy
