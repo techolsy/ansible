@@ -1,0 +1,87 @@
+---
+- name: Remove vm
+  hosts: vm
+  gather_facts: true
+  vars_prompt:
+
+    - name: sane_check
+      prompt: type "YES" to delete these vm's
+
+  vars:
+
+    px_api_defaults: &px_api_defaults
+      api_user: "{{ px_api_user }}"
+      api_token_id: "{{ px_api_token_id }}"
+      api_token_secret: "{{ px_api_token_secret }}"
+      api_host: "{{ px_api_host }}"
+
+  module_defaults:
+
+    community.proxmox.proxmox_kvm:
+      <<: *px_api_defaults
+
+    community.proxmox.proxmox_vm_info:
+      <<: *px_api_defaults
+
+
+  tasks:
+
+    - delegate_to: localhost
+      run_once: true
+      block: # noqa run-once
+
+        - ansible.builtin.fail:
+            msg: You must use -l or --limit
+          when: ansible_limit is not defined
+
+        - ansible.builtin.fail:
+            msg: Aborting
+          when: not sane_check == "YES"
+
+    - name: Remove from zabbix
+      delegate_to: "{{ zabbix_host }}"
+      vars:
+        ansible_zabbix_auth_key: "{{ zabbix_auth_key }}"
+        ansible_network_os: community.zabbix.zabbix
+        ansible_connection: httpapi
+        ansible_httpapi_port: 443
+        ansible_httpapi_use_ssl: true
+        ansible_httpapi_validate_certs: false
+        ansible_zabbix_url_path: "/"
+      community.zabbix.zabbix_host:
+        host_name: "{{ ansible_fqdn }}"
+        visible_name: "{{ ansible_fqdn }}"
+        state: absent
+
+    - delegate_to: localhost
+      block:
+
+        - name: Get vm info from px
+          community.proxmox.proxmox_vm_info:
+            name: "{{ ansible_fqdn }}"
+          register: _vm_info
+
+        - name: Set _vmid fact
+          ansible.builtin.set_fact:
+            _vmid: "{{ _vm_info.proxmox_vms[0].vmid }}"
+          when:  _vm_info.proxmox_vms[0].name == ansible_fqdn
+
+        - name: Make sure vm is stopped
+          community.proxmox.proxmox_kvm:
+            vmid: "{{ _vmid }}"
+            state: stopped
+
+        - name: Remove vm from px
+          community.proxmox.proxmox_kvm:
+            vmid: "{{ _vmid }}"
+            state: absent
+        
+        - ansible.builtin.import_role:
+            name: techolsy.infra.dns
+          vars:
+            dns_action: remove
+
+        - ansible.builtin.import_role:
+            name: techolsy.infra.config
+          vars:
+            config_action: remove
