@@ -1,0 +1,43 @@
+---
+services:
+  unifi-network-application:
+    image: lscr.io/linuxserver/unifi-network-application:{{ unifi_network_application_version }}
+    container_name: unifi-network-application
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - MONGO_USER={{ mongo_user }}
+      - MONGO_PASS={{ mongo_pass }}
+      - MONGO_HOST=unifi-db
+      - MONGO_PORT=27017
+      - MONGO_DBNAME={{ mongo_dbname }}
+      - MONGO_AUTHSOURCE={{ mongo_authsource }}
+    volumes:
+      - ./data:/config
+    ports:
+      - 8443:8443
+      - 3478:3478/udp
+      - 10001:10001/udp
+      - 8080:8080
+      - 1900:1900/udp
+      - 8843:8843
+      - 8880:8880
+      - 6789:6789
+      - 5514:5514/udp
+    restart: unless-stopped
+
+  unifi-db:
+    image: docker.io/mongo:{{ mongo_db_version }}
+    container_name: unifi-db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME={{ mongo_root_user }}
+      - MONGO_INITDB_ROOT_PASSWORD={{ mongo_root_pass }}
+      - MONGO_USER={{ mongo_user }}
+      - MONGO_PASS={{ mongo_pass }}
+      - MONGO_DBNAME={{ mongo_dbname }}
+      - MONGO_AUTHSOURCE={{ mongo_authsource }}
+    volumes:
+      - ./db:/data/db
+      - ./init-mongo.sh:/docker-entrypoint-initdb.d/init-mongo.sh:ro
+    restart: unless-stopped
