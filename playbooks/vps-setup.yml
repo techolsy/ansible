@@ -1,0 +1,143 @@
+---
+- name: Decrypt if dropbear
+  hosts: vps
+  gather_facts: false
+  strategy: linear
+  tasks:
+
+    - ansible.builtin.import_role:
+        name: techolsy.infra.dropbear
+      when: ansible_inventory_fde is defined and ansible_inventory_fde
+      vars:
+        dropbear_action: decrypt
+
+- name: Default VPS setup
+  hosts: vps
+  gather_facts: true
+  handlers:
+
+    - name: Restart zabbix-agent
+      ansible.builtin.systemd_service:
+        name: zabbix-agent2.service
+
+    - name: Zabbix set-maintenance
+      ansible.builtin.include_tasks:
+        file: tasks/zabbix/set-maintenance.yml
+      vars:
+        maintenance_message: "New host: {{ ansible_fqdn }}"
+
+  tasks:
+
+    - name: Make sure packages are installed
+      ansible.builtin.apt:
+        pkg:
+          - iptables
+          - net-tools
+          - curl
+          - ncdu
+          - htop
+          - iotop
+          - vim
+          - tmux
+          - gnupg
+        state: present
+        update_cache: true
+
+    - name: Set iptables alternatives
+      community.general.alternatives:
+        name: "{{ item.name }}"
+        path: "{{ item.path }}"
+      loop:
+        - name: iptables 
+          path: /usr/sbin/iptables-nft
+        - name: ip6tables 
+          path: /usr/sbin/ip6tables-nft
+        - name: arptables 
+          path: /usr/sbin/arptables-nft
+        - name: ebtables 
+          path: /usr/sbin/ebtables-nft
+
+    - name: Set default iptable rules
+      ansible.builtin.iptables:
+        chain: "{{ item.chain | default(omit) }}"
+        source: "{{ item.source | default(omit) }}"
+        policy: "{{ item.policy | default(omit) }}"
+        ctstate: "{{ item.ctstate | default(omit) }}"
+        table: "{{ item.table | default(omit) }}"
+        jump: "{{ item.jump | default(omit) }}"
+        protocol: "{{ item.protocol | default(omit) }}"
+        destination_ports: "{{ item.dest_ports | default(omit) }}"
+        destination_port: "{{ item.dest_port | default(omit) }}"
+        comment: ansible[{{ item.comment | default("playbook") }}]
+      loop: "{{ iptable_default_rules }}"
+
+    - name: Set per host iptable rules
+      ansible.builtin.iptables:
+        chain: "{{ item.chain | default(omit) }}"
+        source: "{{ item.source | default(omit) }}"
+        policy: "{{ item.policy | default(omit) }}"
+        ctstate: "{{ item.ctstate | default(omit) }}"
+        table: "{{ item.table | default(omit) }}"
+        jump: "{{ item.jump | default(omit) }}"
+        protocol: "{{ item.protocol | default(omit) }}"
+        destination_ports: "{{ item.dest_ports | default(omit) }}"
+        destination_port: "{{ item.dest_port | default(omit) }}"
+        comment: ansible[{{ item.comment | default("playbook") }}]
+      loop: "{{ iptable_rules }}"
+
+    - name: Get apt package facts
+      ansible.builtin.package_facts:
+        manager: apt
+
+    - ansible.builtin.include_tasks:
+        file: tasks/zabbix/install-agent.yml
+      when: '"zabbix-agent2" not in ansible_facts.packages'
+
+    - name: Copy zabbix config file
+      ansible.builtin.copy:
+        dest: /etc/zabbix/zabbix_agent2.conf
+        mode: 0644
+        content: |
+          PidFile=/var/run/zabbix/zabbix_agent2.pid
+          LogFile=/var/log/zabbix/zabbix_agent2.log
+          LogFileSize=0
+          Server={{ zabbix_proxy_host }}
+          ServerActive={{ zabbix_proxy_host }}
+          Hostname={{ ansible_hostname }}
+          Include=/etc/zabbix/zabbix_agent2.d/*.conf
+          PluginSocket=/run/zabbix/agent.plugin.sock
+          ControlSocket=/run/zabbix/agent.sock
+          Include=./zabbix_agent2.d/plugins.d/*.conf
+          AllowKey=system.run[*]
+      notify: Restart zabbix-agent
+
+    - name: Add to zabbix
+      delegate_to: "{{ zabbix_host }}"
+      vars:
+        ansible_zabbix_auth_key: "{{ zabbix_auth_key }}"
+        ansible_network_os: community.zabbix.zabbix
+        ansible_connection: httpapi
+        ansible_httpapi_port: 443
+        ansible_httpapi_use_ssl: true
+        ansible_httpapi_validate_certs: false
+        ansible_zabbix_url_path: "/"
+      community.zabbix.zabbix_host:
+        host_name: "{{ ansible_fqdn }}"
+        visible_name: "{{ ansible_fqdn }}"
+        host_groups: "{{ zabbix_host_groups }}"
+        link_templates: "{{ zabbix_link_templates }}"
+        status: enabled
+        state: present
+        interfaces:
+          - type: 1
+            main: 1
+            useip: 1
+            ip: "{{ ansible_inventory_ip }}"
+            dns: "{{ ansible_fqdn }}"
+            port: 10050
+      notify: Zabbix set-maintenance
+
+    - ansible.builtin.import_role:
+        name: techolsy.infra.setup
+      vars:
+        setup_action: vps
