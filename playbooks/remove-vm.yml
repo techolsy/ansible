@@ -2,6 +2,7 @@
 - name: Remove vm
   hosts: vm
   gather_facts: true
+  serial: 1
   vars_prompt:
 
     - name: sane_check
