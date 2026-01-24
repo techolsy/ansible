@@ -1,0 +1,94 @@
+---
+- name: Build sites
+  hosts: localhost
+  gather_facts: false
+  tasks:
+
+    - tags: status_site
+      block:
+
+        - name: Make sure /tmp/status-web is absent
+          ansible.builtin.file:
+            dest: /tmp/status-web
+            state: absent
+
+        - name: Clone status site
+          ansible.builtin.git:
+            repo: "{{ status_repo }}"
+            dest: /tmp/status-web
+            track_submodules: true
+            force: true
+            update: true
+            version: main
+
+        - name: Build status site
+          ansible.builtin.shell: |
+            cd /tmp/status-web
+            hugo build
+          register: _hugo_build
+          changed_when: _hugo_build.rc == 0
+
+    - tags: tech_site
+      block:
+      
+        - name: Make sure /tmp/tech-site is absent
+          ansible.builtin.file:
+            dest: /tmp/tech-site
+            state: absent
+
+        - name: Clone tech site
+          ansible.builtin.git:
+            repo: "{{ tech_site }}"
+            dest: /tmp/tech-site
+            track_submodules: true
+            force: true
+            update: true
+            version: main
+
+        - name: Build tech site
+          ansible.builtin.shell: |
+            cd /tmp/tech-site
+            npm install
+            npm run build
+          register: _vite_build
+          changed_when: _vite_build == 0
+
+
+- name: Web book
+  hosts: web
+  gather_facts: true
+  tasks:
+
+    - name: Make sure /var/www is present
+      ansible.builtin.file:
+        dest: /var/www
+        state: directory
+        mode: 0755
+
+    - tags: status_site
+      block:
+
+        - name: Make sure /var/www/status is present
+          ansible.builtin.file:
+            dest: /var/www/status
+            state: directory
+            mode: 0755
+
+        - name: Sync status web
+          ansible.posix.synchronize:
+            src: /tmp/status-web/public/
+            dest: /var/www/status/
+
+    - tags: tech_site
+      block:
+
+        - name: Make sure /var/www/tech is present
+          ansible.builtin.file:
+            dest: /var/www/tech
+            state: directory
+            mode: 0755
+
+        - name: Sync tech web
+          ansible.posix.synchronize:
+            src: /tmp/tech-site/build/
+            dest: /var/www/tech/
