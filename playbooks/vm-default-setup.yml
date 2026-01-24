@@ -16,6 +16,7 @@
         file: tasks/zabbix/set-maintenance.yml
       vars:
         maintenance_message: "New host: {{ ansible_fqdn }}"
+        maintenance_time: 15
 
     - name: Restart zabbix-agent
       ansible.builtin.systemd_service:
