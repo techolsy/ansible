@@ -1,4 +1,9 @@
 ---
+- ansible.builtin.assert:
+    that:
+      - maintenance_message is defined
+      - maintenance_time is defined
+
 - name: Zabbix set-maintenance
   vars:
     ansible_zabbix_auth_key: "{{ zabbix_auth_key }}"
@@ -14,4 +19,4 @@
     name: "{{ maintenance_message }}"
     host_name: "{{ ansible_fqdn }}"
     state: present
-    minutes: 15
+    minutes: "{{ maintenance_time }}"
