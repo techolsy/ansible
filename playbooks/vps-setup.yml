@@ -41,6 +41,7 @@
           - vim
           - tmux
           - gnupg
+          - rsync
         state: present
         update_cache: true
 
