@@ -37,7 +37,7 @@
         pull: always
       notify: Prune old unused images
 
-    - name: Check if container is healty
+    - name: Check if container is healthy
       community.docker.docker_container_info:
         name: "{{ item }}"
       until: "_container_info.container.State.Health.Status == 'healthy'"
