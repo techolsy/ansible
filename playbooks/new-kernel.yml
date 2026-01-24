@@ -25,6 +25,7 @@
             file: tasks/zabbix/set-maintenance.yml
           vars:
             maintenance_message: "New kernel: {{ ansible_fqdn }}"
+            maintenance_time: 15
 
         - name: Reboot
           ansible.builtin.reboot:
