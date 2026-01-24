@@ -51,7 +51,7 @@
             npm install
             npm run build
           register: _vite_build
-          changed_when: _vite_build == 0
+          changed_when: _vite_build.rc == 0
 
 
 - name: Web book
