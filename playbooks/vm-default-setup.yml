@@ -200,6 +200,8 @@
 
     - ansible.builtin.import_role:
         name: techolsy.infra.setup
+      vars:
+        setup_action: vm
 
     - name: Add setup mark
       ansible.builtin.command:
