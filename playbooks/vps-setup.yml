@@ -25,6 +25,7 @@
         file: tasks/zabbix/set-maintenance.yml
       vars:
         maintenance_message: "New host: {{ ansible_fqdn }}"
+        maintenance_time: 15
 
   tasks:
 
@@ -136,6 +137,13 @@
             dns: "{{ ansible_fqdn }}"
             port: 10050
       notify: Zabbix set-maintenance
+
+    - ansible.builtin.include_tasks:
+        file: tasks/zabbix/set-maintenance.yml
+      when: (ansible_uptime_seconds <= 600)
+      vars:
+        maintenance_message: "host rebooted: {{ ansible_fqdn }}"
+        maintenance_time: 10
 
     - ansible.builtin.import_role:
         name: techolsy.infra.setup
