@@ -12,6 +12,10 @@
       ansible.builtin.apt:
         upgrade: true
 
+    - name: Autoremove
+      ansible.builtin.apt:
+        autoremove: true
+
     - name: Run kernel check script
       ansible.builtin.command:
         cmd: /etc/zabbix/scripts/check_kernel
@@ -29,8 +33,27 @@
 
         - name: Reboot
           ansible.builtin.reboot:
-            reboot_timeout: 300
+            reboot_timeout: 3
+          failed_when: false
 
-        - name: Autoremove
-          ansible.builtin.apt:
-            autoremove: true
+        - name: Wait for boot
+          ansible.builtin.wait_for:
+            host: "{{ ansible_fqdn }}"
+            port: "{{ default_ssh_port }}"
+            delay: 2
+            timeout: 300
+          delegate_to: localhost
+
+
+- name: Decrypt if dropbear
+  hosts: vps
+  gather_facts: false
+  strategy: linear
+  tasks:
+
+    - ansible.builtin.import_role:
+        name: techolsy.infra.dropbear
+      when: ansible_inventory_fde is defined and ansible_inventory_fde
+      vars:
+        dropbear_action: decrypt
+
