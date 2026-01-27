@@ -1,0 +1,13 @@
+services:
+  vikunja:
+    image: vikunja/vikunja:{{ vikunja_version }}
+    environment:
+      VIKUNJA_SERVICE_JWTSECRET: "{{ vikunja_jwt_secret }}"
+      VIKUNJA_SERVICE_PUBLICURL: "{{ vikunja_url }}"
+      VIKUNJA_DATABASE_PATH: /db/vikunja.db
+    ports:
+      - 3456:3456
+    volumes:
+      - ./files:/app/vikunja/files
+      - ./db:/db
+    restart: unless-stopped
