@@ -1,0 +1,17 @@
+services:
+  grafana:
+    image: grafana/grafana:{{ grafana_version }}
+    container_name: grafana
+    restart: unless-stopped
+    user: '0'
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+
+  prometheus:
+    image: prom/prometheus:{{ prom_version }}
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - '9090:9090'
