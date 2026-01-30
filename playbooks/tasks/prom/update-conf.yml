@@ -1,0 +1,18 @@
+---
+- delegate_to: "{{ metric_host }}"
+  block:
+    - name: Copy prom config
+      ansible.builtin.template:
+        src: templates/hosts/grafana/prometheus.yml.j2
+        dest: "{{ metric_conf }}"
+        mode: 0644
+      run_once: true
+      register: _prom_conf
+
+    - name: Restart prom container
+      community.docker.docker_container:
+        name: prometheus
+        state: started
+        restart: true
+      when: _prom_conf.changed
+      run_once: true
