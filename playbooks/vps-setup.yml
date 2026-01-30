@@ -27,6 +27,14 @@
         maintenance_message: "New host: {{ ansible_fqdn }}"
         maintenance_time: 15
 
+    - name: Restart prom-container # noqa run-once
+      community.docker.docker_container:
+        name: prometheus
+        state: started
+        restart: true
+      delegate_to: "{{ metric_host }}"
+      run_once: true
+
   tasks:
 
     - name: Make sure packages are installed
@@ -158,3 +166,21 @@
         key: "{{ item.key }}"
         exclusive: true
       loop: "{{ ssh_keys }}"
+
+    - name: Check if node exporter exists
+      ansible.builtin.stat:
+        dest: /usr/local/bin/node_exporter
+      register: _node_exporter
+
+    - ansible.builtin.include_tasks:
+        file: tasks/node-exporter/install.yml
+      when: not _node_exporter.stat.exists
+
+    - name: Copy prom config # noqa run-once
+      ansible.builtin.template:
+        src: templates/hosts/grafana/prometheus.yml.j2
+        dest: "{{ metric_conf }}"
+        mode: 0644
+      delegate_to: "{{ metric_host }}"
+      notify: Restart prom-container
+      run_once: true
