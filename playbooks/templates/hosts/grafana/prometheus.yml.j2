@@ -38,7 +38,7 @@ scrape_configs:
   enable_http2: true
   static_configs:
   - targets:
-    {% for host in groups['vm'] + groups['vps'] %}
+    {% for host in groups['vm'] + groups['vps'] + groups['proxmox'] %}
     - {{ host }}:9100
     {% endfor %}
     - localhost:9090
