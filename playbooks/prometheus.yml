@@ -1,6 +1,6 @@
 ---
 - name: Prometheus configuration
-  hosts: vm,vps
+  hosts: vm,vps,proxmox
   gather_facts: true
   tasks:
 
