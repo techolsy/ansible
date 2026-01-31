@@ -159,6 +159,12 @@
         exclusive: true
       loop: "{{ ssh_keys }}"
 
+    - ansible.builtin.import_role:
+        name: techolsy.infra.dropbear
+      when: ansible_inventory_fde is defined and ansible_inventory_fde
+      vars:
+        dropbear_action: setup
+
     - name: Check if node exporter exists
       ansible.builtin.stat:
         dest: /usr/local/bin/node_exporter
