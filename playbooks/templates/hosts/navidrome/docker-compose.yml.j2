@@ -1,0 +1,28 @@
+services:
+  navidrome:
+    image: deluan/navidrome:{{ navidrome_version }}
+    user: 0:0
+    ports:
+      - "4533:4533"
+    restart: unless-stopped
+    environment:
+      ND_SCANSCHEDULE: 1h
+      ND_LOGLEVEL: info
+      ND_SESSIONTIMEOUT: 24h
+      ND_BASEURL: "https://{{ ansible_fqdn }}"
+    volumes:
+      - "./data:/data"
+      - "./music:/music:ro"
+
+  yubal:
+    image: ghcr.io/guillevc/yubal:{{ yubal_version }}
+    container_name: yubal
+    user: 0:0
+    ports:
+      - 8000:8000
+    environment:
+      YUBAL_TZ: UTC
+    volumes:
+      - ./music:/app/data
+      - ./config:/app/config
+    restart: unless-stopped
