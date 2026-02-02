@@ -1,0 +1,37 @@
+services:
+  docmost:
+    image: docmost/docmost:{{ docmost_version }}
+    depends_on:
+      - db
+      - redis
+    environment:
+      APP_URL: "https://{{ ansible_fqdn }}"
+      APP_SECRET: "{{ docmost_app_secret }}"
+      DATABASE_URL: "postgresql://{{ psql_user }}:{{ psql_password }}@db:5432/{{ psql_db }}?schema=public"
+      REDIS_URL: "redis://redis:6379"
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    volumes:
+      - docmost:/app/data/storage
+
+  db:
+    image: postgres:{{ psql_version }}
+    environment:
+      POSTGRES_DB: {{ psql_db }}
+      POSTGRES_USER: {{ psql_user }}
+      POSTGRES_PASSWORD: {{ psql_password }}
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:{{ redis_version }}
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+volumes:
+  docmost:
+  db_data:
+  redis_data:
