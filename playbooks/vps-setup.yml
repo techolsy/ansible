@@ -86,6 +86,7 @@
         destination_port: "{{ item.dest_port | default(omit) }}"
         comment: ansible[{{ item.comment | default("playbook") }}]
       loop: "{{ iptable_rules }}"
+      when: iptable_rules is defined
 
     - name: Get apt package facts
       ansible.builtin.package_facts:
