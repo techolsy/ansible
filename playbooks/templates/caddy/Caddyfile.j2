@@ -10,6 +10,14 @@
 {% endfor %}
 {% endif %}
 
+{% if caddy_redir is defined %}
+{% for redir in caddy_redir %}
+{{ redir.hostname }} {
+  redir {{ redir.redir}}
+}
+{% endfor %}
+{% endif %}
+
 {% if caddy_file_servers is defined %}
 {% for file_server in caddy_file_servers %}
 {{ file_server.hostname }} {
