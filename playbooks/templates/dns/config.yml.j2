@@ -1,0 +1,33 @@
+upstreams:
+  groups:
+    default:
+      {% for entry in blocky_upstreams -%}
+      - {{ entry }}
+      {% endfor %}
+
+customDNS:
+  customTTL: 1h
+  mapping:
+    {% for host in groups['all'] -%}
+    {{ hostvars[host].ansible_inventory_hostname }}: {{ hostvars[host].ansible_inventory_ip }}
+    {% endfor -%}
+    {% if dns_hosts is defined -%}
+    {% for host in dns_hosts -%}
+    {{ host }}
+    {% endfor %}
+    {% endif %}
+
+blocking:
+  denylists:
+    ads:
+      - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+  clientGroupsBlock:
+    default:
+      - ads
+
+prometheus:
+  enable: true
+
+ports:
+  dns: 53
+  http: 4000
