@@ -40,8 +40,8 @@ scrape_configs:
   - targets:
     {% for host in groups['vm'] + groups['vps'] + groups['proxmox'] %}
     - {{ host }}:9100
-    {% endfor %}
-    {% for host in groups['dns'] -%}
+    {% endfor -%}
+    {% for host in groups['dns'] %}
     - {{ host }}:4000
     {% endfor %}
     - localhost:9090
