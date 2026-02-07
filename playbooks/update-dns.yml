@@ -1,0 +1,21 @@
+---
+- name: Update dns
+  hosts: dns
+  gather_facts: true
+  serial: 1
+  handlers:
+
+    - name: Restart container
+      community.docker.docker_container:
+        name: blocky
+        state: started
+        restart: true
+
+  tasks:
+
+    - name: Copy config
+      ansible.builtin.template:
+        src: templates/dns/config.yml.j2
+        dest: "{{ blocky_config_file }}"
+        mode: 0644
+      notify: Restart container
