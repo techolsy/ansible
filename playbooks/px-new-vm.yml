@@ -30,15 +30,11 @@
           - ip_addr is defined
           - host is defined
 
-    - name: Set ipv6 fact
-      ansible.builtin.set_fact:
-        ip6_addr: "{{ ip6_prefix + ip_addr.split('.')[-1] }}"
-
-    - name: Import role to add host to DNS
-      ansible.builtin.import_role:
-        name: techolsy.infra.dns
-      vars:
-        dns_action: add
+    - name: Add host to /etc/hosts
+      become: true
+      ansible.builtin.lineinfile:
+        dest: /etc/hosts
+        line: "{{ ip_addr }} {{ host }}"
 
     - name: Clone template vm
       community.proxmox.proxmox_kvm:
@@ -88,3 +84,16 @@
         name: techolsy.infra.config
       vars:
         config_action: create
+
+    - name: Remove host from /etc/hosts
+      become: true
+      ansible.builtin.lineinfile:
+        dest: /etc/hosts
+        line: "{{ ip_addr }} {{ host }}"
+        state: absent
+
+    - ansible.builtin.meta: refresh_inventory
+
+
+- name: Update dns
+  ansible.builtin.import_playbook: update-dns.yml
