@@ -1,4 +1,6 @@
 upstreams:
+  timeout: 5s
+  strategy: parallel_best
   groups:
     default:
       {% for entry in blocky_upstreams -%}
@@ -6,7 +8,7 @@ upstreams:
       {% endfor %}
 
 customDNS:
-  customTTL: 1h
+  customTTL: 15m
   mapping:
     {% for host in groups['all'] -%}
     {{ hostvars[host].ansible_inventory_hostname }}: {{ hostvars[host].ansible_inventory_ip }}
