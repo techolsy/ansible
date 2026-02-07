@@ -3,14 +3,6 @@
   hosts: dns
   gather_facts: true
   serial: 1
-  handlers:
-
-    - name: Restart container
-      community.docker.docker_container:
-        name: blocky
-        state: started
-        restart: true
-
   tasks:
 
     - name: Copy config
@@ -18,4 +10,19 @@
         src: templates/dns/config.yml.j2
         dest: "{{ blocky_config_file }}"
         mode: 0644
-      notify: Restart container
+      register: _config_copy
+
+    - name: Restart container
+      community.docker.docker_container:
+        name: blocky
+        state: started
+        restart: true
+      when: _config_copy.changed
+
+    - name: Check if container is healthy
+      community.docker.docker_container_info:
+        name: blocky
+      until: "_container_info.container.State.Health.Status == 'healthy'"
+      register: _container_info
+      retries: 15
+      delay: 10
