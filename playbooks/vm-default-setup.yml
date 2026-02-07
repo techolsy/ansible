@@ -83,11 +83,19 @@
           nameserver {{ nameserver1 }}
           nameserver {{ nameserver2 }}
 
-    - name: Make sure systemd interface exists
-      ansible.builtin.template:
-        src: templates/systemd/network/interface.network.j2
+    - name: Copy systemd network interface
+      ansible.builtin.copy:
+        content: "{{ _content | community.general.to_ini }}"
         dest: /etc/systemd/network/{{ ansible_default_ipv4.interface }}.network
         mode: 0644
+      vars:
+        _content:
+          Match:
+            Name: "{{ ansible_default_ipv4.interface }}"
+          Network:
+            Address: "{{ ansible_inventory_ip }}/{{ ip4_cidr }}"
+            Gateway: "{{ ip4_gw }}"
+            DNS: "{{ nameserver1 }} {{ nameserver2 }}"
 
     - name: Make sure networkd is enabled and running
       ansible.builtin.systemd_service:
