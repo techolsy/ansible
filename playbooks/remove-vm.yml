@@ -78,11 +78,6 @@
             state: absent
         
         - ansible.builtin.import_role:
-            name: techolsy.infra.dns
-          vars:
-            dns_action: remove
-
-        - ansible.builtin.import_role:
             name: techolsy.infra.config
           vars:
             config_action: remove
