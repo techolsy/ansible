@@ -28,11 +28,18 @@ customDNS:
 
 blocking:
   denylists:
-    ads:
-      - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+    multi:
+      - https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/multi.txt
   clientGroupsBlock:
     default:
-      - ads
+      - multi
+
+caching:
+  prefetching: true
+
+filtering:
+  queryTypes:
+    - AAAA
 
 prometheus:
   enable: true
