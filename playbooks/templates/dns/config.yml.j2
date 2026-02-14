@@ -7,6 +7,13 @@ upstreams:
       - {{ entry }}
       {% endfor %}
 
+bootstrapDns:
+  upstream: {{ blocky_upstream }}
+  ips:
+    {% for ip in blocky_upstream_ips -%}
+    - {{ ip }}
+    {% endfor %}
+
 customDNS:
   customTTL: 15m
   mapping:
