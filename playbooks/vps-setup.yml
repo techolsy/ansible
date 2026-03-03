@@ -63,6 +63,7 @@
       ansible.builtin.iptables:
         chain: "{{ item.chain | default(omit) }}"
         source: "{{ item.source | default(omit) }}"
+        destination: "{{ item.destination | default(omit) }}"
         policy: "{{ item.policy | default(omit) }}"
         ctstate: "{{ item.ctstate | default(omit) }}"
         table: "{{ item.table | default(omit) }}"
@@ -77,6 +78,7 @@
       ansible.builtin.iptables:
         chain: "{{ item.chain | default(omit) }}"
         source: "{{ item.source | default(omit) }}"
+        destination: "{{ item.destination | default(omit) }}"
         policy: "{{ item.policy | default(omit) }}"
         ctstate: "{{ item.ctstate | default(omit) }}"
         table: "{{ item.table | default(omit) }}"
@@ -84,6 +86,7 @@
         protocol: "{{ item.protocol | default(omit) }}"
         destination_ports: "{{ item.dest_ports | default(omit) }}"
         destination_port: "{{ item.dest_port | default(omit) }}"
+        source_port: "{{ item.source_port | default(omit) }}"
         comment: ansible[{{ item.comment | default("playbook") }}]
       loop: "{{ iptable_rules }}"
       when: iptable_rules is defined
