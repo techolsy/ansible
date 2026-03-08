@@ -2,6 +2,22 @@
 - name: Default vm setup
   hosts: vm
   gather_facts: true
+  vars:
+
+    px_api_defaults: &px_api_defaults
+      api_user: "{{ px_api_user }}"
+      api_token_id: "{{ px_api_token_id }}"
+      api_token_secret: "{{ px_api_token_secret }}"
+      api_host: "{{ px_api_host }}"
+
+  module_defaults:
+
+    community.proxmox.proxmox_disk:
+      <<: *px_api_defaults
+
+    community.proxmox.proxmox_vm_info:
+      <<: *px_api_defaults
+
   handlers:
 
     - name: Copy motd-datestamp
@@ -46,6 +62,13 @@
     - ansible.builtin.include_tasks:
         file: tasks/swap/add.yml
       when: not _vg1_swap.stat.exists
+
+    - ansible.builtin.include_tasks:
+        file: tasks/disk/add.yml
+      when: extra_disks is defined
+      loop: "{{ extra_disks }}"
+      loop_control:
+        loop_var: _disk
 
     - name: Make sure cloud-init is absent
       ansible.builtin.apt:

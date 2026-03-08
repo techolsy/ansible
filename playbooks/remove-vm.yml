@@ -65,7 +65,7 @@
         - name: Set _vmid fact
           ansible.builtin.set_fact:
             _vmid: "{{ _vm_info.proxmox_vms[0].vmid }}"
-          when:  _vm_info.proxmox_vms[0].name == ansible_fqdn
+          when: _vm_info.proxmox_vms[0].name == ansible_fqdn
 
         - name: Make sure vm is stopped
           community.proxmox.proxmox_kvm:
@@ -76,7 +76,7 @@
           community.proxmox.proxmox_kvm:
             vmid: "{{ _vmid }}"
             state: absent
-        
+
         - ansible.builtin.import_role:
             name: techolsy.infra.config
           vars:
