@@ -11,7 +11,7 @@
         _vmid: "{{ _vm_info.proxmox_vms[0].vmid }}"
       when: _vm_info.proxmox_vms[0].name == ansible_fqdn
 
-    - name: Add disk for swap
+    - name: Add disk scsi{{ _disk.scsi }}
       community.proxmox.proxmox_disk:
         vmid: "{{ _vmid }}"
         disk: scsi{{ _disk.scsi }}
