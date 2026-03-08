@@ -1,0 +1,54 @@
+---
+- delegate_to: localhost
+  block:
+    - name: Get vm info from px
+      community.proxmox.proxmox_vm_info:
+        name: "{{ ansible_fqdn }}"
+      register: _vm_info
+
+    - name: Set _vmid fact
+      ansible.builtin.set_fact:
+        _vmid: "{{ _vm_info.proxmox_vms[0].vmid }}"
+      when: _vm_info.proxmox_vms[0].name == ansible_fqdn
+
+    - name: Add disk for swap
+      community.proxmox.proxmox_disk:
+        vmid: "{{ _vmid }}"
+        disk: scsi{{ _disk.scsi }}
+        backup: true
+        iothread: true
+        discard: true
+        storage: "{{ px_default_storage }}"
+        size: "{{ _disk.size }}"
+        state: present
+
+- name: Find correct disk
+  ansible.builtin.shell: |
+    set -o pipefail &&
+    ls -l /dev/disk/by-id | grep 'scsi{{ _disk.scsi }}' | cut -d '/' -f 3
+  register: _disk_id
+  changed_when: false
+
+- name: Create vg{{ _disk.scsi }}
+  community.general.lvg:
+    vg: "{{ _disk.scsi }}"
+    pvs: /dev/{{ _disk_id.stdout }}
+
+- name: Create {{ _disk.name }}
+  community.general.lvol:
+    vg: "{{ _disk.scsi }}"
+    lv: "{{ _disk.name }}"
+    size: 100%FREE
+    shrink: false
+
+- name: Create filesystem
+  community.general.filesystem:
+    fstype: ext4
+    dev: /dev/mapper/{{ _disk.scsi }}-{{ _disk.name }}
+
+- name: Mount filesystem
+  ansible.posix.mount:
+    path: "{{ _disk.mountpoint }}"
+    src: /dev/mapper/{{ _disk.scsi }}-{{ _disk.name }}
+    fstype: ext4
+    state: present
