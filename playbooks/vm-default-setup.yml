@@ -156,12 +156,11 @@
         password: "{{ root_password }}"
 
     - name: Get apt package facts
-      ansible.builtin.package_facts:
-        manager: apt
+      techolsy.integration.apt_package_facts:
 
     - ansible.builtin.include_tasks:
         file: tasks/zabbix/install-agent.yml
-      when: '"zabbix-agent2" not in ansible_facts.packages'
+      when: '"zabbix-agent2" not in ansible_facts.apt_packages'
 
     - name: Copy zabbix config file
       ansible.builtin.copy:
