@@ -40,7 +40,6 @@
           ansible.builtin.wait_for:
             host: "{{ ansible_fqdn }}"
             port: "{{ default_ssh_port }}"
-            delay: 2
             timeout: 300
           delegate_to: localhost
 
@@ -56,4 +55,3 @@
       when: ansible_inventory_fde is defined and ansible_inventory_fde
       vars:
         dropbear_action: decrypt
-
