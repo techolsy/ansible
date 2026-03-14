@@ -31,3 +31,6 @@
 [submodule "collections/ansible_collections/community/docker"]
 	path = collections/ansible_collections/community/docker
 	url = https://github.com/ansible-collections/community.docker.git
+[submodule "collections/ansible_collections/techolsy/exmod"]
+	path = collections/ansible_collections/techolsy/exmod
+	url = git@github.com:techolsy/exmod.git
