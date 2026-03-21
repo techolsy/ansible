@@ -12,12 +12,11 @@
 
   tasks:
     - name: Get apt package facts
-      ansible.builtin.package_facts:
-        manager: apt
+      techolsy.exmod.apt_package_facts:
 
     - ansible.builtin.include_tasks:
         file: tasks/docker/install.yml
-      when: '"docker-ce" not in ansible_facts.packages'
+      when: '"docker-ce" not in ansible_facts.apt_packages'
 
     - name: Make sure directory exists
       ansible.builtin.file:
