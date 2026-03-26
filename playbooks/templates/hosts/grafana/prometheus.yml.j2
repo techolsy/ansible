@@ -41,9 +41,6 @@ scrape_configs:
     {% for host in groups['vm'] + groups['vps'] + groups['vpn'] + groups['proxmox'] %}
     - {{ host }}:9100
     {% endfor -%}
-    {% for host in groups['dns'] %}
-    - {{ host }}:4000
-    {% endfor %}
     - localhost:9090
     labels:
       app: prometheus

@@ -24,6 +24,12 @@
     community.proxmox.proxmox_vm_info:
       <<: *px_api_defaults
 
+    community.general.nsupdate:
+      key_name: "{{ tsig_key_name }}"
+      key_secret: "{{ tsig_key_secret }}"
+      key_algorithm: "{{ tsig_key_algorithm }}"
+      server: "{{ tsig_server }}"
+      zone: "{{ dns_zone }}"
 
   tasks:
 
@@ -81,3 +87,9 @@
             name: techolsy.infra.config
           vars:
             config_action: remove
+
+        - name: Remove host to DNS
+          community.general.nsupdate:
+            record: '{{ ansible_facts["hostname"] }}'
+            value: '{{ ansible_facts["default_ipv4"]["interface"] }}'
+            state: absent
