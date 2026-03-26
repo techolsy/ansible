@@ -22,6 +22,13 @@
     community.proxmox.proxmox_disk:
       <<: *px_api_defaults
 
+    community.general.nsupdate:
+      key_name: "{{ tsig_key_name }}"
+      key_secret: "{{ tsig_key_secret }}"
+      key_algorithm: "{{ tsig_key_algorithm }}"
+      server: "{{ tsig_server }}"
+      zone: "{{ dns_zone }}"
+
   tasks:
 
     - name: Check assertions
@@ -29,6 +36,11 @@
         that:
           - ip_addr is defined
           - host is defined
+
+    - name: Add host to DNS
+      community.general.nsupdate:
+        record: "{{ host.split('.')[0] }}"
+        value: "{{ ip_addr }}"
 
     - name: Add host to /etc/hosts
       become: true
@@ -93,7 +105,3 @@
         state: absent
 
     - ansible.builtin.meta: refresh_inventory
-
-
-- name: Update dns
-  ansible.builtin.import_playbook: update-dns.yml
