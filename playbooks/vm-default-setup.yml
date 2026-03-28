@@ -45,23 +45,9 @@
 
   tasks:
 
-    - name: Check if vg0 swap disk exist
-      ansible.builtin.stat:
-        dest: /dev/mapper/0-swap
-      register: _vg0_swap
-
-    - ansible.builtin.include_tasks:
-        file: tasks/swap/remove.yml
-      when: _vg0_swap.stat.exists
-
-    - name: Check if vg1 swap disk exist
-      ansible.builtin.stat:
-        dest: /dev/mapper/1-swap
-      register: _vg1_swap
-
     - ansible.builtin.include_tasks:
         file: tasks/swap/add.yml
-      when: not _vg1_swap.stat.exists
+      when: ansible_facts["memory_mb"]["swap"]["total"] == 0
 
     - ansible.builtin.include_tasks:
         file: tasks/disk/add.yml
@@ -96,6 +82,9 @@
         dest: /etc/network/interfaces
         state: absent
 
+    - name: Gather apt packages as facts
+      techolsy.exmod.apt_package_facts:
+
     - name: Copy resolv.conf
       ansible.builtin.copy:
         dest: /etc/resolv.conf
@@ -105,6 +94,7 @@
           search {{ local_domain }}
           nameserver {{ nameserver1 }}
           nameserver {{ nameserver2 }}
+      when: '"systemd-resolved" not in ansible_facts.apt_packages'
 
     - name: Copy systemd network interface
       ansible.builtin.copy:
@@ -140,6 +130,7 @@
           - vim
           - tmux
           - gnupg
+          - systemd-resolved
         state: present
         update_cache: true
 
