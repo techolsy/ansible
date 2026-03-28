@@ -14,3 +14,29 @@
       - zabbix-agent2
       - zabbix-agent2-plugin-*
     state: present
+
+- name: Add to zabbix
+  delegate_to: "{{ zabbix_host }}"
+  vars:
+    ansible_zabbix_auth_key: "{{ zabbix_auth_key }}"
+    ansible_network_os: community.zabbix.zabbix
+    ansible_connection: httpapi
+    ansible_httpapi_port: 443
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false
+    ansible_zabbix_url_path: "/"
+  community.zabbix.zabbix_host:
+    host_name: "{{ ansible_fqdn }}"
+    visible_name: "{{ ansible_fqdn }}"
+    host_groups: "{{ zabbix_host_groups }}"
+    link_templates: "{{ zabbix_link_templates }}"
+    status: enabled
+    state: present
+    interfaces:
+      - type: 1
+        main: 1
+        useip: 1
+        ip: "{{ ansible_inventory_ip }}"
+        dns: "{{ ansible_fqdn }}"
+        port: 10050
+  notify: Zabbix set-maintenance
