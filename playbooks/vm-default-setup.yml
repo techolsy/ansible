@@ -109,6 +109,7 @@
             Address: "{{ ansible_inventory_ip }}/{{ ip4_cidr }}"
             Gateway: "{{ ip4_gw }}"
             DNS: "{{ nameserver1 }} {{ nameserver2 }}"
+      when: "'dns' not in group_names"
 
     - name: Make sure networkd is enabled and running
       ansible.builtin.systemd_service:
@@ -146,9 +147,6 @@
         name: root
         password: "{{ root_password }}"
 
-    - name: Get apt package facts
-      techolsy.integration.apt_package_facts:
-
     - ansible.builtin.include_tasks:
         file: tasks/zabbix/install-agent.yml
       when: '"zabbix-agent2" not in ansible_facts.apt_packages'
@@ -170,6 +168,7 @@
           Include=./zabbix_agent2.d/plugins.d/*.conf
           AllowKey=system.run[*]
       notify: Restart zabbix-agent
+      when: '"zabbix-server-mysql" not in ansible_facts.apt_packages'
 
     - name: Copy hotplug rules
       ansible.builtin.copy:
