@@ -91,5 +91,11 @@
         - name: Remove host to DNS
           community.general.nsupdate:
             record: '{{ ansible_facts["hostname"] }}'
-            value: '{{ ansible_facts["default_ipv4"]["interface"] }}'
+            state: absent
+
+        - name: Add PTR to DNS
+          community.general.nsupdate:
+            record: '{{ ansible_facts["default_ipv4"]["address"].split(".")[3] }}'
+            zone: "{{ ptr_zone }}"
+            type: "PTR"
             state: absent

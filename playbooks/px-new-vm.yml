@@ -27,7 +27,6 @@
       key_secret: "{{ tsig_key_secret }}"
       key_algorithm: "{{ tsig_key_algorithm }}"
       server: "{{ tsig_server }}"
-      zone: "{{ dns_zone }}"
 
   tasks:
 
@@ -41,6 +40,14 @@
       community.general.nsupdate:
         record: "{{ host.split('.')[0] }}"
         value: "{{ ip_addr }}"
+        zone: "{{ dns_zone }}"
+
+    - name: Add PTR to DNS
+      community.general.nsupdate:
+        record: "{{ ip_addr.split('.')[3] }}"
+        value: "{{ host }}"
+        zone: "{{ ptr_zone }}"
+        type: "PTR"
 
     - name: Add host to /etc/hosts
       become: true
