@@ -48,29 +48,6 @@
         state: present
         update_cache: true
 
-    - ansible.builtin.include_tasks:
-        file: tasks/zabbix/install-agent.yml
-      when: '"zabbix-agent2" not in ansible_facts.apt_packages'
-
-    - name: Copy zabbix config file
-      ansible.builtin.copy:
-        dest: /etc/zabbix/zabbix_agent2.conf
-        mode: 0644
-        content: |
-          PidFile=/var/run/zabbix/zabbix_agent2.pid
-          LogFile=/var/log/zabbix/zabbix_agent2.log
-          LogFileSize=0
-          Server={{ zabbix_host }}
-          ServerActive={{ zabbix_host }}
-          Hostname={{ ansible_hostname }}
-          Include=/etc/zabbix/zabbix_agent2.d/*.conf
-          PluginSocket=/run/zabbix/agent.plugin.sock
-          ControlSocket=/run/zabbix/agent.sock
-          Include=./zabbix_agent2.d/plugins.d/*.conf
-          AllowKey=system.run[*]
-      notify: Restart zabbix-agent
-      when: '"zabbix-server-mysql" not in ansible_facts.apt_packages'
-
     - name: Copy root certificate
       ansible.builtin.copy:
         dest: /usr/local/share/ca-certificates/{{ item.name }}
