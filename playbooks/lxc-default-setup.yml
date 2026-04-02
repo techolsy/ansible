@@ -1,0 +1,98 @@
+---
+- name: LXC default setup
+  hosts: lxc
+  gather_facts: false
+  handlers:
+
+    - name: Copy motd-datestamp
+      ansible.builtin.copy:
+        dest: /etc/motd
+        mode: 0644
+        content: |
+          Server setup date: {{ now(utc=true, fmt='%Y-%m-%d') }}
+
+    - name: Zabbix set-maintenance
+      ansible.builtin.include_tasks:
+        file: tasks/zabbix/set-maintenance.yml
+      vars:
+        maintenance_message: "New host: {{ ansible_fqdn }}"
+        maintenance_time: 15
+
+    - name: Restart zabbix-agent
+      ansible.builtin.systemd_service:
+        name: zabbix-agent2
+        state: restarted
+
+  pre_tasks:
+
+    - name: Check and install python # noqa no-changed-when
+      ansible.builtin.raw: apt list --installed | grep -q python3-apt || apt install -y python3 python3-apt
+      args:
+        executable: /bin/bash
+
+    - name: Gather facts
+      ansible.builtin.setup:
+
+    - name: Gather apt packages as facts
+      techolsy.exmod.apt_package_facts:
+
+  tasks:
+
+    - name: Make sure default packages are installed
+      ansible.builtin.apt:
+        pkg:
+          - curl
+          - vim
+          - gnupg
+          - ca-certificates
+        state: present
+        update_cache: true
+
+    - ansible.builtin.include_tasks:
+        file: tasks/zabbix/install-agent.yml
+      when: '"zabbix-agent2" not in ansible_facts.apt_packages'
+
+    - name: Copy zabbix config file
+      ansible.builtin.copy:
+        dest: /etc/zabbix/zabbix_agent2.conf
+        mode: 0644
+        content: |
+          PidFile=/var/run/zabbix/zabbix_agent2.pid
+          LogFile=/var/log/zabbix/zabbix_agent2.log
+          LogFileSize=0
+          Server={{ zabbix_host }}
+          ServerActive={{ zabbix_host }}
+          Hostname={{ ansible_hostname }}
+          Include=/etc/zabbix/zabbix_agent2.d/*.conf
+          PluginSocket=/run/zabbix/agent.plugin.sock
+          ControlSocket=/run/zabbix/agent.sock
+          Include=./zabbix_agent2.d/plugins.d/*.conf
+          AllowKey=system.run[*]
+      notify: Restart zabbix-agent
+      when: '"zabbix-server-mysql" not in ansible_facts.apt_packages'
+
+    - name: Copy root certificate
+      ansible.builtin.copy:
+        dest: /usr/local/share/ca-certificates/{{ item.name }}
+        mode: 0644
+        content: "{{ item.content }}"
+      loop: "{{ root_certificates }}"
+      register: copy_root_certs
+
+    - name: Update ca trust # noqa no-handler
+      ansible.builtin.command:
+        cmd: update-ca-certificates
+      changed_when: false
+      when: copy_root_certs.changed
+
+    - ansible.builtin.import_role:
+        name: techolsy.infra.setup
+      vars:
+        setup_action: lxc
+
+    - name: Add setup mark
+      ansible.builtin.command:
+        cmd: touch /root/.ansible-setup-done
+      args:
+        creates: /root/.ansible-setup-done
+      notify: Copy motd-datestamp
