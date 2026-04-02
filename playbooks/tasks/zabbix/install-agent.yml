@@ -12,7 +12,6 @@
     update_cache: true
     pkg:
       - zabbix-agent2
-      - zabbix-agent2-plugin-*
     state: present
 
 - name: Add to zabbix
