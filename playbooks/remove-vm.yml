@@ -88,12 +88,12 @@
           vars:
             config_action: remove
 
-        - name: Remove host to DNS
+        - name: Remove host from DNS
           community.general.nsupdate:
             record: '{{ ansible_facts["hostname"] }}'
             state: absent
 
-        - name: Add PTR to DNS
+        - name: Remove PTR from DNS
           community.general.nsupdate:
             record: '{{ ansible_facts["default_ipv4"]["address"].split(".")[3] }}'
             zone: "{{ ptr_zone }}"
