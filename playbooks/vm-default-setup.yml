@@ -39,6 +39,11 @@
         name: zabbix-agent2
         state: restarted
 
+    - name: Restart timesyncd
+      ansible.builtin.systemd_service:
+        name: systemd-timesyncd.service
+        state: restarted
+
     - name: Reboot
       ansible.builtin.reboot:
         reboot_timeout: 300
@@ -132,8 +137,21 @@
           - tmux
           - gnupg
           - systemd-resolved
+          - systemd-timesyncd
         state: present
         update_cache: true
+
+    - name: Ensure NTP is set
+      ansible.builtin.copy:
+        dest: /etc/systemd/timesyncd.conf
+        content: "{{ _content | community.general.to_ini }}"
+        mode: 0644
+      vars:
+        _content:
+          Time:
+            NTP: 0.se.pool.ntp.org 1.se.pool.ntp.org 2.se.pool.ntp.org 3.se.pool.ntp.org
+            FallbackNTP: 0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
+      notify: Restart timesyncd
 
     - name: Make sure template users is absent
       ansible.builtin.user:
