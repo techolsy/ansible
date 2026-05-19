@@ -1,7 +1,7 @@
 ---
 - name: Remove vm
   hosts: vm
-  gather_facts: true
+  gather_facts: false
   serial: 1
   vars_prompt:
 
@@ -56,8 +56,8 @@
         ansible_httpapi_validate_certs: false
         ansible_zabbix_url_path: "/"
       community.zabbix.zabbix_host:
-        host_name: "{{ ansible_fqdn }}"
-        visible_name: "{{ ansible_fqdn }}"
+        host_name: "{{ ansible_inventory_hostname }}"
+        visible_name: "{{ ansible_inventory_hostname }}"
         state: absent
 
     - delegate_to: localhost
@@ -65,18 +65,19 @@
 
         - name: Get vm info from px
           community.proxmox.proxmox_vm_info:
-            name: "{{ ansible_fqdn }}"
+            name: "{{ ansible_inventory_hostname }}"
           register: _vm_info
 
         - name: Set _vmid fact
           ansible.builtin.set_fact:
             _vmid: "{{ _vm_info.proxmox_vms[0].vmid }}"
-          when: _vm_info.proxmox_vms[0].name == ansible_fqdn
+          when: _vm_info.proxmox_vms[0].name == ansible_inventory_hostname
 
         - name: Make sure vm is stopped
           community.proxmox.proxmox_kvm:
             vmid: "{{ _vmid }}"
             state: stopped
+            force: true
 
         - name: Remove vm from px
           community.proxmox.proxmox_kvm:
@@ -90,12 +91,12 @@
 
         - name: Remove host from DNS
           community.general.nsupdate:
-            record: '{{ ansible_facts["hostname"] }}'
+            record: '{{ ansible_inventory_hostname }}'
             state: absent
 
         - name: Remove PTR from DNS
           community.general.nsupdate:
-            record: '{{ ansible_facts["default_ipv4"]["address"].split(".")[3] }}'
+            record: '{{ ansible_inventory_ip.split(".")[3] }}'
             zone: "{{ ptr_zone }}"
             type: "PTR"
             state: absent
