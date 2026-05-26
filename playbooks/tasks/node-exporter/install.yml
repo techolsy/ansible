@@ -4,6 +4,7 @@
     src: https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-amd64.tar.gz
     dest: /tmp
     remote_src: true
+  retries: 20
 
 - name: Move binary
   ansible.builtin.copy:
