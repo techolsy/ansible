@@ -91,7 +91,7 @@
 
         - name: Remove host from DNS
           community.general.nsupdate:
-            record: '{{ ansible_inventory_hostname }}'
+            record: '{{ ansible_inventory_hostname.split(".")[0] }}'
             state: absent
 
         - name: Remove PTR from DNS
