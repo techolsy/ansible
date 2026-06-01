@@ -18,6 +18,7 @@
     lv: swap
     size: 100%FREE
     force: true
+    shrink: false
 
 - name: Format 1-swap
   community.general.filesystem:
