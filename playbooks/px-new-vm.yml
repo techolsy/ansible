@@ -57,7 +57,7 @@
 
     - name: Clone template vm
       community.proxmox.proxmox_kvm:
-        vmid: 9003
+        vmid: 9005
         clone: template
         name: "{{ host }}"
         storage: "{{ px_default_storage }}"
