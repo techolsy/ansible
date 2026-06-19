@@ -1,27 +1,85 @@
 ---
-- name: Download node exporter
-  ansible.builtin.unarchive:
-    src: https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-amd64.tar.gz
-    dest: /tmp
-    remote_src: true
-  retries: 20
+- vars:
 
-- name: Move binary
-  ansible.builtin.copy:
-    src: /tmp/node_exporter-1.10.2.linux-amd64/node_exporter
-    dest: /usr/local/bin/node_exporter
-    remote_src: true
-    mode: 0755
+    __node_exporter_binary: node_exporter
+    __node_exporter_binary_version: 1.11.1
+    __node_exporter_installed_version: '{{ ansible_local["node_exporter"]["version"] }}'
 
-- name: Copy systemd service
-  ansible.builtin.template:
-    src: templates/systemd/service/node_exporter.service.j2
-    dest: /etc/systemd/system/node_exporter.service
-    mode: 0755
+  when: __node_exporter_installed_version | default('') != __node_exporter_binary_version
 
-- name: Start and enable node exporter
-  ansible.builtin.systemd_service:
-    name: node_exporter.service
-    daemon_reload: true
-    enabled: true
-    state: started
+  block:
+
+    - name: Ensure temporary node_exporter directory is present
+      ansible.builtin.file:
+        dest: /tmp/node_exporter
+        state: directory
+        mode: 0644
+
+    - name: Copy node_exporter tar file and sig
+      ansible.builtin.copy:
+        src: files/{{ item }}
+        dest: /tmp/node_exporter
+        mode: 0755
+      loop:
+        - "{{ __node_exporter_binary }}-{{ __node_exporter_binary_version }}.tar"
+        - "{{ __node_exporter_binary }}-{{ __node_exporter_binary_version }}.sig"
+
+    - name: Unarchive node_exporter tar file
+      ansible.builtin.unarchive:
+        src: /tmp/node_exporter/{{ __node_exporter_binary }}-{{ __node_exporter_binary_version }}.tar
+        dest: /tmp/node_exporter
+        remote_src: true
+
+    - name: Verify node_exporter binary
+      ansible.builtin.command:
+        cmd: |
+          /usr/bin/gpg2 --verify {{ __node_exporter_binary }}-{{ __node_exporter_binary_version }}.sig {{ __node_exporter_binary }}-{{ __node_exporter_binary_version }}
+      changed_when: false
+      args:
+        chdir: /tmp/node_exporter
+
+    - name: Gather systemd info
+      techolsy.exmod.systemd_info:
+
+    - name: Stop node_exporter service if exist
+      ansible.builtin.systemd_service:
+        name: node_exporter.service
+        state: stopped
+      when: "'node_exporter.service' in ansible_facts['units']"
+
+    - name: Ensure node_exporter is absent in bin
+      ansible.builtin.file:
+        dest: /usr/local/bin/{{ __node_exporter_binary }}
+        state: absent
+
+    - name: Copy node_exporter to bin
+      ansible.builtin.copy:
+        src: /tmp/node_exporter/{{ __node_exporter_binary }}-{{ __node_exporter_binary_version }}
+        dest: /usr/local/bin/{{ __node_exporter_binary }}
+        mode: 0755
+        remote_src: true
+      notify: Restart node_exporter
+
+    - name: Copy systemd service
+      ansible.builtin.template:
+        src: templates/systemd/service/node_exporter.service.j2
+        dest: /etc/systemd/system/node_exporter.service
+        mode: 0755
+      notify: Systemd daemon-reload
+
+    - name: Set node_exporter facts
+      ansible.builtin.copy:
+        dest: /etc/ansible/facts.d/node_exporter.fact
+        content: "{{ _content | ansible.builtin.to_nice_json }}"
+        mode: 0644
+      vars:
+        _content:
+          name: node_exporter
+          version: "{{ __node_exporter_binary_version }}"
+
+  always:
+
+    - name: Remove temporary node_exporter directory
+      ansible.builtin.file:
+        dest: /tmp/node_exporter
+        state: absent
