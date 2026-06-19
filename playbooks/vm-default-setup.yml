@@ -44,6 +44,15 @@
         name: systemd-timesyncd.service
         state: restarted
 
+    - name: Systemd daemon-reload
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: Restart node_exporter
+      ansible.builtin.systemd_service:
+        name: node_exporter.service
+        state: restarted
+
     - name: Reboot
       ansible.builtin.reboot:
         reboot_timeout: 300
@@ -138,6 +147,7 @@
           - gnupg
           - systemd-resolved
           - systemd-timesyncd
+          - gnupg2
         state: present
         update_cache: true
 
@@ -164,6 +174,10 @@
       ansible.builtin.user:
         name: root
         password: "{{ root_password }}"
+
+    - name: Import GPG Keys
+      ansible.builtin.import_tasks:
+        file: tasks/gpg/import.yml
 
     - ansible.builtin.include_tasks:
         file: tasks/zabbix/install-agent.yml
@@ -203,6 +217,8 @@
         mode: 0644
         content: "{{ item.content }}"
       loop: "{{ root_certificates }}"
+      loop_control:
+        label: "{{ item.name }}"
       register: copy_root_certs
 
     - name: Update ca trust # noqa no-handler
@@ -216,14 +232,8 @@
       vars:
         setup_action: vm
 
-    - name: Check if node exporter exists
-      ansible.builtin.stat:
-        dest: /usr/local/bin/node_exporter
-      register: _node_exporter
-
     - ansible.builtin.include_tasks:
         file: tasks/node-exporter/install.yml
-      when: not _node_exporter.stat.exists
 
     - ansible.builtin.include_tasks:
         file: tasks/prom/update-conf.yml
