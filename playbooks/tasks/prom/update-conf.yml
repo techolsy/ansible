@@ -9,7 +9,7 @@
         mode: 0644
       register: _prom_conf
 
-    - name: Restart prom container
+    - name: Restart prom container # noqa no-handler
       community.docker.docker_container:
         name: prometheus
         state: started

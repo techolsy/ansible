@@ -1,0 +1,25 @@
+---
+- name: Ensure gnupg directory is present
+  ansible.builtin.file:
+    dest: /root/.gnupg
+    state: directory
+    mode: 0700
+
+- name: Ensure gpg keys is present
+  ansible.builtin.copy:
+    content: "{{ item.key }}"
+    dest: /root/.gnupg/{{ item.name }}.gpg
+    mode: 0700
+  loop: "{{ gpg_keys }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Import gpg key
+  ansible.builtin.command:
+    cmd: /usr/bin/gpg2 --trust-model always --import {{ item.name }}.gpg
+  changed_when: false
+  loop: "{{ gpg_keys }}"
+  loop_control:
+    label: "{{ item.name }}"
+  args:
+    chdir: /root/.gnupg
