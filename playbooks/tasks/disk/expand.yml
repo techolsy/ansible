@@ -1,0 +1,13 @@
+---
+- name: Expand root partition
+  ansible.builtin.command:
+    cmd: /usr/bin/growpart /dev/sda 2
+  register: _growpart_cmd
+  changed_when: _growpart_cmd.rc == 0
+
+- name: Expand root lv
+  community.general.lvol:
+    vg: 0
+    lv: root
+    size: +100%FREE
+    resizefs: true

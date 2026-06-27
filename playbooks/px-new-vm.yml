@@ -87,6 +87,18 @@
         size: 2
         state: present
 
+    - name: Resize root disk
+      community.proxmox.proxmox_disk:
+        vmid: "{{ _vm_info.vmid }}"
+        disk: scsi0
+        backup: true
+        iothread: true
+        discard: true
+        storage: "{{ px_default_storage }}"
+        size: "+{{ disk }}"
+        state: resized
+      when: disk is defined
+
     - name: Start vm
       community.proxmox.proxmox_kvm:
         vmid: "{{ _vm_info.vmid }}"
@@ -103,6 +115,12 @@
         name: techolsy.infra.config
       vars:
         config_action: create
+
+    - name: Expand root disk
+      delegate_to: "{{ host }}"
+      ansible.builtin.import_tasks:
+        file: tasks/disk/expand.yml
+      when: disk is defined
 
     - name: Remove host from /etc/hosts
       become: true
