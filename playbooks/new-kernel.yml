@@ -33,7 +33,7 @@
 
         - name: Reboot
           ansible.builtin.reboot:
-            reboot_timeout: 3
+            reboot_timeout: 1
           failed_when: false
 
         - name: Wait for boot
