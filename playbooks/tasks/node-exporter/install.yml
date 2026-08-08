@@ -2,7 +2,7 @@
 - vars:
 
     __node_exporter_binary: node_exporter
-    __node_exporter_binary_version: 1.11.1
+    __node_exporter_binary_version: 1.12.1
     __node_exporter_installed_version: '{{ ansible_local["node_exporter"]["version"] }}'
 
   when: __node_exporter_installed_version | default('') != __node_exporter_binary_version
