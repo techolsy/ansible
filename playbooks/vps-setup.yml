@@ -16,6 +16,11 @@
   gather_facts: true
   handlers:
 
+    - name: Restart node_exporter
+      ansible.builtin.systemd_service:
+        name: node_exporter.service
+        state: restarted
+
     - name: Restart zabbix-agent
       ansible.builtin.systemd_service:
         name: zabbix-agent2.service
@@ -42,6 +47,7 @@
           - tmux
           - gnupg
           - rsync
+          - gnupg2
         state: present
         update_cache: true
 
@@ -50,13 +56,13 @@
         name: "{{ item.name }}"
         path: "{{ item.path }}"
       loop:
-        - name: iptables 
+        - name: iptables
           path: /usr/sbin/iptables-nft
-        - name: ip6tables 
+        - name: ip6tables
           path: /usr/sbin/ip6tables-nft
-        - name: arptables 
+        - name: arptables
           path: /usr/sbin/arptables-nft
-        - name: ebtables 
+        - name: ebtables
           path: /usr/sbin/ebtables-nft
 
     - name: Set default iptable rules
@@ -90,6 +96,9 @@
         comment: ansible[{{ item.comment | default("playbook") }}]
       loop: "{{ iptable_rules }}"
       when: iptable_rules is defined
+
+    - ansible.builtin.import_tasks:
+        file: tasks/gpg/import.yml
 
     - name: Get apt package facts
       ansible.builtin.package_facts:
@@ -169,14 +178,8 @@
       vars:
         dropbear_action: setup
 
-    - name: Check if node exporter exists
-      ansible.builtin.stat:
-        dest: /usr/local/bin/node_exporter
-      register: _node_exporter
-
     - ansible.builtin.include_tasks:
         file: tasks/node-exporter/install.yml
-      when: not _node_exporter.stat.exists
 
     - ansible.builtin.include_tasks:
         file: tasks/prom/update-conf.yml
