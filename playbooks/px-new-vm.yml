@@ -36,18 +36,24 @@
           - ip_addr is defined
           - host is defined
 
-    - name: Add host to DNS
-      community.general.nsupdate:
-        record: "{{ host.split('.')[0] }}"
-        value: "{{ ip_addr }}"
-        zone: "{{ dns_zone }}"
 
-    - name: Add PTR to DNS
-      community.general.nsupdate:
-        record: "{{ ip_addr.split('.')[3] }}"
-        value: "{{ host }}"
-        zone: "{{ ptr_zone }}"
-        type: "PTR"
+    - name: Add host from DNS
+      ansible.builtin.import_tasks:
+        file: tasks/dns/update.yml
+      vars:
+        record: '{{ host.split(".")[0] }}'
+        value: '{{ ip_addr }}'
+        state: present
+        type: A
+
+    - name: Add PTR from DNS
+      ansible.builtin.import_tasks:
+        file: tasks/dns/update.yml
+      vars:
+        record: '{{ ip_addr.split(".")[3] }}'
+        value: '{{ host }}'
+        state: present
+        type: PTR
 
     - name: Add host to /etc/hosts
       become: true
