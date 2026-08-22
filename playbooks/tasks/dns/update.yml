@@ -1,0 +1,21 @@
+---
+- name: Check assertions
+  ansible.builtin.assert:
+    that:
+      - record is defined
+      - value is defined
+      - type is defined
+      - state is defined
+
+- name: Set fact when PTR
+  ansible.builtin.set_fact:
+    zone: "{{ ptr_zone }}"
+  when: type == "PTR"
+
+- name: Update DNS Record
+  community.general.nsupdate:
+    record: "{{ record }}"
+    value: "{{ value }}"
+    zone: "{{ zone | default(dns_zone) }}"
+    type: "{{ type }}"
+    state: "{{ state }}"
