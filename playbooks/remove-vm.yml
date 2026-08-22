@@ -90,13 +90,19 @@
             config_action: remove
 
         - name: Remove host from DNS
-          community.general.nsupdate:
+          ansible.builtin.import_tasks:
+            file: tasks/dns/update.yml
+          vars:
             record: '{{ ansible_inventory_hostname.split(".")[0] }}'
+            value: '{{ ansible_inventory_ip }}'
             state: absent
+            type: A
 
         - name: Remove PTR from DNS
-          community.general.nsupdate:
+          ansible.builtin.import_tasks:
+            file: tasks/dns/update.yml
+          vars:
             record: '{{ ansible_inventory_ip.split(".")[3] }}'
-            zone: "{{ ptr_zone }}"
-            type: "PTR"
+            value: '{{ ansible_inventory_hostname }}'
             state: absent
+            type: PTR
