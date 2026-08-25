@@ -21,6 +21,12 @@
         name: node_exporter.service
         state: restarted
 
+    - name: Start node_exporter
+      ansible.builtin.systemd_service:
+        name: node_exporter.service
+        enabled: true
+        state: started
+
     - name: Restart zabbix-agent
       ansible.builtin.systemd_service:
         name: zabbix-agent2.service
