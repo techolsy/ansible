@@ -238,6 +238,9 @@
       vars:
         setup_action: vm
 
+    - ansible.builtin.import_role:
+        name: techolsy.infra.monitoring
+
     - ansible.builtin.include_tasks:
         file: tasks/node-exporter/install.yml
 
