@@ -170,6 +170,9 @@
       vars:
         setup_action: vps
 
+    - ansible.builtin.import_role:
+        name: techolsy.infra.monitoring
+
     - name: Set authorized keys
       ansible.posix.authorized_key:
         user: "{{ item.name }}"
