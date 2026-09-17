@@ -154,6 +154,7 @@
           - systemd-resolved
           - systemd-timesyncd
           - gnupg2
+          - jq
         state: present
         update_cache: true
 
