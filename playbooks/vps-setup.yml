@@ -172,6 +172,8 @@
 
     - ansible.builtin.import_role:
         name: techolsy.infra.monitoring
+      vars:
+        monitoring_actions: vm
 
     - name: Set authorized keys
       ansible.posix.authorized_key:
