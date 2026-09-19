@@ -122,6 +122,11 @@
       vars:
         config_action: create
 
+    - ansible.builtin.import_role:
+        name: techolsy.infra.monitoring
+      vars:
+        monitoring_actions: add
+
     - name: Expand root disk
       delegate_to: "{{ host }}"
       ansible.builtin.import_tasks:
