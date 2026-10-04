@@ -89,6 +89,11 @@
           vars:
             config_action: remove
 
+        - ansible.builtin.import_role:
+            name: techolsy.infra.monitoring
+          vars:
+            monitoring_actions: remove
+
         - name: Remove host from DNS
           ansible.builtin.import_tasks:
             file: tasks/dns/update.yml
