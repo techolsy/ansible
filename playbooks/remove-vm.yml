@@ -45,21 +45,6 @@
             msg: Aborting
           when: not sane_check == "YES"
 
-    - name: Remove from zabbix
-      delegate_to: "{{ zabbix_host }}"
-      vars:
-        ansible_zabbix_auth_key: "{{ zabbix_auth_key }}"
-        ansible_network_os: community.zabbix.zabbix
-        ansible_connection: httpapi
-        ansible_httpapi_port: 443
-        ansible_httpapi_use_ssl: true
-        ansible_httpapi_validate_certs: false
-        ansible_zabbix_url_path: "/"
-      community.zabbix.zabbix_host:
-        host_name: "{{ ansible_inventory_hostname }}"
-        visible_name: "{{ ansible_inventory_hostname }}"
-        state: absent
-
     - delegate_to: localhost
       block:
 
