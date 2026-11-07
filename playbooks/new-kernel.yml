@@ -1,6 +1,6 @@
 ---
 - name: Reboot if new kernel
-  hosts: vm,vps
+  hosts: vm
   gather_facts: true
   tasks:
 
@@ -18,19 +18,13 @@
 
     - name: Run kernel check script
       ansible.builtin.command:
-        cmd: /etc/zabbix/scripts/check_kernel
+        cmd: /usr/lib/nagios/plugins/check_kernel
       register: _check_kernel
       changed_when: false
+      failed_when: false
 
-    - when: not _check_kernel.stdout == "Running latest installed kernel"
+    - when: not _check_kernel.stdout == "OK - Running latest installed kernel"
       block:
-        - name: Zabbix set-maintenance
-          ansible.builtin.include_tasks:
-            file: tasks/zabbix/set-maintenance.yml
-          vars:
-            maintenance_message: "New kernel: {{ ansible_fqdn }}"
-            maintenance_time: 15
-
         - name: Reboot
           ansible.builtin.reboot:
             reboot_timeout: 1
@@ -42,16 +36,3 @@
             port: "{{ default_ssh_port }}"
             timeout: 300
           delegate_to: localhost
-
-
-- name: Decrypt if dropbear
-  hosts: vps
-  gather_facts: false
-  strategy: linear
-  tasks:
-
-    - ansible.builtin.import_role:
-        name: techolsy.infra.dropbear
-      when: ansible_inventory_fde is defined and ansible_inventory_fde
-      vars:
-        dropbear_action: decrypt
