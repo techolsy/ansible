@@ -16,4 +16,9 @@ services:
     ports:
       - '9090:9090'
     volumes:
-      - ./prom-data:/etc/prometheus
+      - ./prom-config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prom-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=90d'
