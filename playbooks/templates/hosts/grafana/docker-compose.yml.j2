@@ -22,3 +22,14 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--storage.tsdb.retention.time=90d'
+
+  loki:
+    image: grafana/loki:{{ loki_version }}
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - ./loki-config/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - ./loki-data:/loki
+    restart: unless-stopped
