@@ -22,6 +22,7 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--storage.tsdb.retention.time=90d'
+      - '--storage.tsdb.retention.size=10GB'
 
   loki:
     image: grafana/loki:{{ loki_version }}
